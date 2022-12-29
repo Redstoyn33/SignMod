@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "sign",
+  "version": "${version}",
+  "name": "Sign",
+  "description": "",
+  "authors": [
+    "Redstoyn33"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "icon.png",
+  "environment": "client",
+  "entrypoints": {
+  },
+  "mixins": [
+    "sign.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.12",
+    "minecraft": "1.19.3"
+  }
+}
