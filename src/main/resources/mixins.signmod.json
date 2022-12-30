@@ -1,0 +1,6 @@
+{
+    "compatibilityLevel": "JAVA_8",
+    "package": "me.redstoyn33.signmod.mixin",
+    "refmap": "refmap.signmod.json",
+    "client": ["AbstractSignEditScreenMixin", "GuiScreenMixin", "BlockSignMixin"]
+}

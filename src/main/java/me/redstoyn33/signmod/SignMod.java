@@ -1,10 +1,14 @@
-package me.redstoyn33.sign;
+package me.redstoyn33.signmod;
 
-import java.nio.charset.StandardCharsets;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class SignModInfo {
+@Mod(modid = "signmod")
+public class SignMod {
     public static String key = "";
     public static MessageDigest sha256;
     public static final int SIGN_SIZE = 44;
@@ -12,7 +16,7 @@ public class SignModInfo {
 
     static {
         try {
-            SignModInfo.sha256 = MessageDigest.getInstance("SHA-256");
+            sha256 = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -24,6 +28,14 @@ public class SignModInfo {
         for (int i = 0; i < out.length; i++) {
             out[i] = (byte) (msg[i] ^ key[j++]);
             if (j == key.length) j = 0;
+        }
+        return out;
+    }
+
+    public static byte[] xor(byte[] msg, byte key) {
+        byte[] out = new byte[msg.length];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = (byte) (msg[i] ^ key);
         }
         return out;
     }
@@ -65,5 +77,13 @@ public class SignModInfo {
 
     private static byte uint2byte(int i) {
         return (byte) (i > 127 ? i - 256 : i);
+    }
+
+    public static byte[] HMAC_SHA256(byte[] key,byte[] data){
+        return sha256.digest(ArrayUtils.addAll(xor(key, (byte) 0x5C),sha256.digest(ArrayUtils.addAll(xor(key, (byte) 0x36),data))));
+    }
+
+    public static String pos2s(BlockPos pos){
+        return pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
     }
 }
