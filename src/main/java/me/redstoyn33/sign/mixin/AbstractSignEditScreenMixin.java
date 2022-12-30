@@ -1,5 +1,6 @@
 package me.redstoyn33.sign.mixin;
 
+import me.redstoyn33.sign.SignCode;
 import me.redstoyn33.sign.SignModInfo;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.gui.screen.Screen;
@@ -9,6 +10,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import org.apache.commons.lang3.ArrayUtils;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,8 +25,9 @@ import java.util.Base64;
 @Mixin(AbstractSignEditScreen.class)
 public abstract class AbstractSignEditScreenMixin extends Screen {
 
-    private static boolean signMod_encrypt = false;
+    private static boolean signMod_encode = false;
     private static boolean signMod_stableC = true;
+    private static boolean signMod_signPos = true;
 
     public TextFieldWidget signMod_textInput;
     public TextFieldWidget signMod_keyInput;
@@ -48,7 +51,6 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
     public abstract void tick();
 
     @Inject(at = @At("TAIL"), method = "init")
-
     private void init(CallbackInfo ci) {
         if (children().get(0) instanceof ButtonWidget) {
             ((ButtonWidget) children().get(0)).setY(this.height / 4 + 90);
@@ -65,9 +67,9 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
         signMod_keyInput.setChangedListener(s -> SignModInfo.key = s);
         addSelectableChild(signMod_textInput);
         addSelectableChild(signMod_keyInput);
-        addDrawableChild(ButtonWidget.builder(signMod_encrypt ? Text.literal("Encoded") : Text.literal("Uncoded"), button -> {
-                    signMod_encrypt = !signMod_encrypt;
-                    button.setMessage(signMod_encrypt ? Text.literal("Encoded") : Text.literal("Uncoded"));
+        addDrawableChild(ButtonWidget.builder(signMod_encode ? Text.literal("Encoded") : Text.literal("Uncoded"), button -> {
+                    signMod_encode = !signMod_encode;
+                    button.setMessage(signMod_encode ? Text.literal("Encoded") : Text.literal("Uncoded"));
                 })
                 .dimensions(width - 60, height / 4 + 150, 50, 20).build());
         addDrawableChild(ButtonWidget.builder(signMod_stableC ? Text.literal("Stable") : Text.literal("Сompress"), button -> {
@@ -75,12 +77,17 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
                     button.setMessage(signMod_stableC ? Text.literal("Stable") : Text.literal("Сompress"));
                 })
                 .dimensions(width - 60, height / 4 + 60, 50, 20).build());
+        addDrawableChild(ButtonWidget.builder(signMod_signPos ? Text.literal("SignPos") : Text.literal("IgnorePos"), button -> {
+                    signMod_signPos = !signMod_signPos;
+                    button.setMessage(signMod_signPos ? Text.literal("SignPos") : Text.literal("IgnorePos"));
+                })
+                .dimensions(width - 60, height / 4 + 30, 50, 20).build());
         addDrawableChild(ButtonWidget.builder(Text.literal("Send"), button -> {
                     //
                     if (signMod_textInput.getText().isEmpty()) return;
                     if (SignModInfo.key.isEmpty()) return;
                     String s;
-                    if (signMod_encrypt) {
+                    if (signMod_encode) {
                         if (signMod_stableC) {
                             s = Base64.getEncoder().encodeToString(SignModInfo.xor(signMod_textInput.getText().getBytes(StandardCharsets.UTF_8), SignModInfo.key.getBytes(StandardCharsets.UTF_8)));
                         } else {
@@ -89,10 +96,10 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
                     } else {
                         s = signMod_textInput.getText();
                     }
-                    SignModInfo.sha256.update(s.getBytes(StandardCharsets.UTF_8));
-                    SignModInfo.sha256.update(SignModInfo.key.getBytes(StandardCharsets.UTF_8));
-                    s += Base64.getEncoder().encodeToString(SignModInfo.sha256.digest());
-                    s += signMod_encrypt ? (signMod_stableC ? "+" : "*") : "-";
+                    byte[] t = s.getBytes(StandardCharsets.UTF_8);
+                    if (signMod_signPos) t = ArrayUtils.addAll(t.clone(),blockEntity.getPos().toShortString().getBytes(StandardCharsets.UTF_8));
+                    s += Base64.getEncoder().encodeToString(SignModInfo.HMAC_SHA256(SignModInfo.key.getBytes(StandardCharsets.UTF_8),t));
+                    s += SignCode.newCode(signMod_encode,signMod_stableC,signMod_signPos);
                     if (s.length() > SignModInfo.MAX_LINE_TEXT * 4) {
                         button.setMessage(Text.literal("Oversize"));
                         button.setTooltip(Tooltip.of(Text.literal(s.length() + "/" + (SignModInfo.MAX_LINE_TEXT * 4))));

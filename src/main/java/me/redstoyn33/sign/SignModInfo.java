@@ -1,8 +1,12 @@
 package me.redstoyn33.sign;
 
-import java.nio.charset.StandardCharsets;
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class SignModInfo {
     public static String key = "";
@@ -24,6 +28,14 @@ public class SignModInfo {
         for (int i = 0; i < out.length; i++) {
             out[i] = (byte) (msg[i] ^ key[j++]);
             if (j == key.length) j = 0;
+        }
+        return out;
+    }
+
+    public static byte[] xor(byte[] msg, byte key) {
+        byte[] out = new byte[msg.length];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = (byte) (msg[i] ^ key);
         }
         return out;
     }
@@ -65,5 +77,9 @@ public class SignModInfo {
 
     private static byte uint2byte(int i) {
         return (byte) (i > 127 ? i - 256 : i);
+    }
+
+    public static byte[] HMAC_SHA256(byte[] key,byte[] data){
+        return sha256.digest(ArrayUtils.addAll(xor(key, (byte) 0x5C),sha256.digest(ArrayUtils.addAll(xor(key, (byte) 0x36),data))));
     }
 }

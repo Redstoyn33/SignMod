@@ -1,5 +1,6 @@
 package me.redstoyn33.sign.mixin;
 
+import me.redstoyn33.sign.SignCode;
 import me.redstoyn33.sign.SignModInfo;
 import net.minecraft.block.AbstractSignBlock;
 import net.minecraft.block.BlockState;
@@ -12,6 +13,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.ArrayUtils;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -37,16 +39,18 @@ public class AbstractSignBlockMixin {
                 sb.append(text.getString());
             }
             if (!sb.isEmpty() && sb.length() > SignModInfo.SIGN_SIZE + 1) {
-                String endCode = sb.substring(sb.length() - 1);
-                if (endCode.equals("+") || endCode.equals("*") || endCode.equals("-")) {
+                SignCode endCode = SignCode.newCode(sb.substring(sb.length() - 1));
+                if (endCode!=null) {
                     String text = sb.substring(0, sb.length() - SignModInfo.SIGN_SIZE - 1);
                     String sign = sb.substring(sb.length() - SignModInfo.SIGN_SIZE - 1, sb.length() - 1);
-                    boolean encrypt = !endCode.equals("-");
-                    boolean stableC = endCode.equals("+");
-                    SignModInfo.sha256.update(text.getBytes(StandardCharsets.UTF_8));
-                    SignModInfo.sha256.update(SignModInfo.key.getBytes(StandardCharsets.UTF_8));
-                    if (Base64.getEncoder().encodeToString(SignModInfo.sha256.digest()).equals(sign)) {
-                        if (encrypt) {
+                    boolean encode = endCode.encode;
+                    boolean stableC = endCode.stable;
+                    boolean singPos = endCode.pos;
+                    byte[] t = text.getBytes(StandardCharsets.UTF_8);
+                    if (singPos) t = ArrayUtils.addAll(t.clone(),pos.toShortString().getBytes(StandardCharsets.UTF_8));
+                    String testSign = Base64.getEncoder().encodeToString(SignModInfo.HMAC_SHA256(SignModInfo.key.getBytes(StandardCharsets.UTF_8),t));
+                    if (testSign.equals(sign)) {
+                        if (encode) {
                             if (stableC){
                                 player.sendMessage(Text.literal("Sign is correct, encoded message:"));
                                 player.sendMessage(Text.literal(new String(SignModInfo.xor(Base64.getDecoder().decode(text), SignModInfo.key.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
