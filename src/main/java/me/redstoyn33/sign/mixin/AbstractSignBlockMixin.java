@@ -47,7 +47,7 @@ public class AbstractSignBlockMixin {
                     boolean stableC = endCode.stable;
                     boolean singPos = endCode.pos;
                     byte[] t = text.getBytes(StandardCharsets.UTF_8);
-                    if (singPos) t = ArrayUtils.addAll(t.clone(),pos.toShortString().getBytes(StandardCharsets.UTF_8));
+                    if (singPos) t = ArrayUtils.addAll(t,pos.toShortString().getBytes(StandardCharsets.UTF_8));
                     String testSign = Base64.getEncoder().encodeToString(SignModInfo.HMAC_SHA256(SignModInfo.key.getBytes(StandardCharsets.UTF_8),t));
                     if (testSign.equals(sign)) {
                         if (encode) {

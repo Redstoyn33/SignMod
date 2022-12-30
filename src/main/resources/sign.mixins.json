@@ -4,13 +4,11 @@
   "package": "me.redstoyn33.sign.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
-    "AbstractSignEditScreenMixin"
+    "AbstractSignEditScreenMixin",
+    "AbstractSignBlockMixin",
+    "SignBlockEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-    "AbstractSignBlockMixin",
-    "SignBlockEntityMixin"
-  ]
+  }
 }

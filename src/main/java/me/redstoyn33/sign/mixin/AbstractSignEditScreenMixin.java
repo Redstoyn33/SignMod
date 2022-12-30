@@ -76,12 +76,12 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
                     signMod_stableC = !signMod_stableC;
                     button.setMessage(signMod_stableC ? Text.literal("Stable") : Text.literal("Сompress"));
                 })
-                .dimensions(width - 60, height / 4 + 60, 50, 20).build());
+                .dimensions(width - 60, height / 4 + 90, 50, 20).build());
         addDrawableChild(ButtonWidget.builder(signMod_signPos ? Text.literal("SignPos") : Text.literal("IgnorePos"), button -> {
                     signMod_signPos = !signMod_signPos;
                     button.setMessage(signMod_signPos ? Text.literal("SignPos") : Text.literal("IgnorePos"));
                 })
-                .dimensions(width - 60, height / 4 + 30, 50, 20).build());
+                .dimensions(width - 60, height / 4 + 60, 50, 20).build());
         addDrawableChild(ButtonWidget.builder(Text.literal("Send"), button -> {
                     //
                     if (signMod_textInput.getText().isEmpty()) return;
@@ -97,7 +97,7 @@ public abstract class AbstractSignEditScreenMixin extends Screen {
                         s = signMod_textInput.getText();
                     }
                     byte[] t = s.getBytes(StandardCharsets.UTF_8);
-                    if (signMod_signPos) t = ArrayUtils.addAll(t.clone(),blockEntity.getPos().toShortString().getBytes(StandardCharsets.UTF_8));
+                    if (signMod_signPos) t = ArrayUtils.addAll(t,blockEntity.getPos().toShortString().getBytes(StandardCharsets.UTF_8));
                     s += Base64.getEncoder().encodeToString(SignModInfo.HMAC_SHA256(SignModInfo.key.getBytes(StandardCharsets.UTF_8),t));
                     s += SignCode.newCode(signMod_encode,signMod_stableC,signMod_signPos);
                     if (s.length() > SignModInfo.MAX_LINE_TEXT * 4) {
