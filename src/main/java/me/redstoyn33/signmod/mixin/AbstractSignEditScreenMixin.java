@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @Mixin(GuiEditSign.class)
-public abstract class AbstractSignEditScreenMixin extends GuiScreenMixin {
+public abstract class AbstractSignEditScreenMixin extends GuiScreen {
 
     private static boolean signMod_encode = false;
     private static boolean signMod_stableC = true;
@@ -40,6 +40,7 @@ public abstract class AbstractSignEditScreenMixin extends GuiScreenMixin {
     @Inject(at = @At("TAIL"), method = "initGui")
     private void init(CallbackInfo ci) {
         doneBtn.y = height / 4 + 90;
+
         signMod_textInput = new GuiTextField(1, this.fontRenderer, 10, height / 4 + 120, width - 80, 20);
         signMod_textInput.setMaxStringLength(SignMod.MAX_LINE_TEXT * 8);
         signMod_keyInput = new GuiTextField(2, this.fontRenderer, 10, height / 4 + 150, width - 80, 20);
